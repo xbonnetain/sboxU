@@ -554,6 +554,45 @@ std::vector<Integer> bct_row(const Sbox s, const Sbox s_inv, const BinWord a)
 }
 
 
+std::vector<Integer> faster_bct_row(const Sbox s, const BinWord a)
+{
+    if (a == 0)
+        return std::vector<Integer>(s.size(),s.size());
+
+    std::vector<Integer> result(s.size(), 0);
+    std::vector<std::vector<BinWord> > xor_list(s.size(), std::vector<BinWord>(0));
+
+    for (BinWord x=0; x<s.size(); x++)
+    {
+        BinWord y = x ^ a;
+        if (y < x)
+            continue;
+        BinWord z = s[x] ^ s[y];
+        xor_list[z].push_back(s[x]);
+    }
+
+    result[0]=s.size();
+
+    for (BinWord z=0; z<s.size(); z++)
+    {
+        auto collision_list = xor_list[z];
+        size_t len = collision_list.size();
+        for(size_t i = 0; i < len; i++)
+        {
+            BinWord z1 = collision_list[i];
+            for(size_t j = i+1; j < len; j++)
+            {
+                BinWord z2 = collision_list[j];
+                result[ z1 ^ z2 ] += 4;
+                // TODO: Think about non-bijective sboxes
+                result[ z1 ^ z2 ^ z ] += 4;
+            }
+        }
+    }
+    return result;
+}
+
+
 void bct_rows_count(
     std::map<Integer, Integer> &result,
     const Sbox s,
