@@ -10,6 +10,7 @@ When possible the functions are multi-threaded. In particular, computing "spectr
 
 from sboxU.statistics.cython_functions import \
     differential_spectrum, ddt, differential_uniformity, is_differential_uniformity_smaller_than, \
+    fp_ddt, fp_differential_spectrum, fp_differential_uniformity, \
     walsh_transform, walsh_spectrum, absolute_walsh_spectrum, lat, invert_lat, linearity, \
     boomerang_spectrum, bct, boomerang_uniformity, \
     fbct_spectrum, fbct,xddt,yddt,zddt, linear_structures, linear_structures_vectorial, linear_structures_vectorial_spectrum

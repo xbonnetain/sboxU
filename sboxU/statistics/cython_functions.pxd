@@ -47,6 +47,13 @@ cdef extern from "../cpp/statistics/differential.cpp":
     pass
 
 
+# !SUBSECTION! Differential properties for F_p
+
+cdef extern from "../cpp/statistics/differential_fp.hpp":
+    cpp_Spectrum cpp_fp_differential_spectrum(const cpp_S_box_fp & s)
+    std_vector[std_vector[int64_t]] cpp_fp_ddt(const cpp_S_box_fp & s)
+
+
 # !SUBSECTION! Linear properties
 
 cdef extern from "../cpp/statistics/linear.hpp":

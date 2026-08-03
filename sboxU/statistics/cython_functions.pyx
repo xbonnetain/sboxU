@@ -83,6 +83,64 @@ def is_differential_uniformity_smaller_than(s, u):
     )
 
 
+# !SECTION! Differential properties for F_p
+
+
+def fp_ddt(s):
+    """The Difference Distribution Table of an S-box over F_p.
+
+    `D[a][b] = #{x : S(x+a) - S(x) = b (mod p)}`, where `+` and `-` are
+    coordinate-wise modular arithmetic in F_p^n.
+
+    Args:
+        s (S_box_fp): An S-box over F_p.
+
+    Returns:
+        list: A 2D list `D` such that `D[a][b]` is the DDT coefficient for
+            input difference `a` and output difference `b`, indexed by their
+            integer representations in base p (little-endian).
+    """
+    if not isinstance(s, S_box_fp):
+        raise TypeError("fp_ddt requires an S_box_fp")
+    return cpp_fp_ddt(dereference((<S_box_fp>s).cpp_sb))
+
+
+def fp_differential_spectrum(s):
+    """The differential spectrum of an S-box over F_p.
+
+    Counts the occurrences of each DDT coefficient over all non-zero input
+    differences, without materialising the full table in memory. Uses OpenMP
+    multi-threading to speed up the computation.
+
+    Args:
+        s (S_box_fp): An S-box over F_p.
+
+    Returns:
+        Spectrum: A `Spectrum` instance `sp` such that `sp[k]` is the number
+            of pairs `(delta, gamma)` with `delta != 0` and
+            `D[delta][gamma] = k`.
+    """
+    if not isinstance(s, S_box_fp):
+        raise TypeError("fp_differential_spectrum requires an S_box_fp")
+    result = Spectrum(name="Fp Differential".encode("UTF-8"))
+    result.set_inner_sp(cpp_fp_differential_spectrum(dereference((<S_box_fp>s).cpp_sb)))
+    return result
+
+
+def fp_differential_uniformity(s):
+    """The differential uniformity of an S-box over F_p.
+
+    The maximum DDT coefficient over all non-zero input differences.
+
+    Args:
+        s (S_box_fp): An S-box over F_p.
+
+    Returns:
+        int: The differential uniformity of the S-box.
+    """
+    return fp_differential_spectrum(s).maximum()
+
+
 # !SECTION! Linear properties
 
 
