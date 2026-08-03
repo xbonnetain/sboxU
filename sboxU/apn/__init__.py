@@ -18,5 +18,6 @@ from sboxU.apn.cython_functions import \
 
 from sboxU.apn.database import APNFunctions, sixBitAPNs
 from sboxU.apn.database import APNQuadraticFunctions_ccz_only
-from sboxU.apn.database import APNQuadraticFunctions_compact
+from sboxU.apn.database import APNFunctions_compact
+from sboxU.apn.biblio_dict import from_which_paper
 

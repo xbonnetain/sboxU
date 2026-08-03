@@ -20,6 +20,11 @@ bool cpp_product_walsh_match_any(
     const std::vector<cpp_F2AffineMap>& G2,
     const cpp_BinLinearBasis& V1,
     const cpp_BinLinearBasis& V2);
+std::pair<int,int> cpp_product_walsh_match_indices(
+    const std::vector<cpp_F2AffineMap>& G1,
+    const std::vector<cpp_F2AffineMap>& G2,
+    const cpp_BinLinearBasis& Vf,
+    const cpp_BinLinearBasis& Vg);
 
     
 std::vector<cpp_F2AffineMap> cpp_ea_mapping_from_vq(

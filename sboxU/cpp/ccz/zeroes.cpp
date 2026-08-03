@@ -77,16 +77,18 @@ void cpp_WalshZeroesSpaces::init_mappings(
                 }
             }
     }
-    // building the mappings by transposing
+    // building the mappings by transposing; keep only the relevant bases
+    std::vector<cpp_BinLinearBasis> new_bases;
     for(unsigned int i=0; i<bases.size(); i++)
         if (relevant[i])
         {
-            std::vector<BinWord> img = cpp_complete_basis(bases[i],
-                                                          total_size);
+            new_bases.push_back(bases[i]);
+            std::vector<BinWord> img = cpp_complete_basis(bases[i], total_size);
             std::reverse(img.begin(), img.end());
             cpp_F2AffineMap L(img);
             mappings.push_back(L.transpose());
         }
+    bases = std::move(new_bases);
 }
 
 
@@ -131,15 +133,18 @@ void cpp_WalshZeroesSpaces::init_mappings(
         }
     }
 
-    // Build one mapping per relevant space
+    // Build one mapping per relevant space; keep only the relevant bases
+    std::vector<cpp_BinLinearBasis> new_bases;
     for (unsigned int i = 0; i < bases.size(); i++)
         if (relevant[i])
         {
+            new_bases.push_back(bases[i]);
             std::vector<BinWord> img = cpp_complete_basis(bases[i], total_size);
             std::reverse(img.begin(), img.end());
             cpp_F2AffineMap L(img);
             mappings.push_back(L.transpose());
         }
+    bases = std::move(new_bases);
 }
 
 
@@ -235,13 +240,17 @@ void cpp_WalshZeroesSpaces::init_mappings_generators(
     for (auto & g : generators)
         A.push_back((g + g.get_cstte()).transpose());
 
+    // One mapping per orbit representative; keep only the representative bases
+    std::vector<cpp_BinLinearBasis> new_bases;
     for (auto & orbit : cpp_Walsh_zero_orbits(*this, A))
     {
+        new_bases.push_back(bases[orbit[0]]);
         std::vector<BinWord> img = cpp_complete_basis(bases[orbit[0]], total_size);
         std::reverse(img.begin(), img.end());
         cpp_F2AffineMap L(img);
         mappings.push_back(L.transpose());
     }
+    bases = std::move(new_bases);
 }
 
 

@@ -49,7 +49,7 @@ cdef extern from "../cpp/apn/invariants.hpp":
     )
 
 
-    
+
 cdef extern from "../cpp/apn/invariants.cpp":
     pass
 

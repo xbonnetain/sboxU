@@ -44,6 +44,18 @@ cdef class WalshZeroesSpaces:
 
 
         
+    def copy(self):
+        """Returns an independent copy of this WalshZeroesSpaces's bases.The copy's mappings are reset to empty rather than copied, since init_mappings(automorphisms) appends to .mappings instead of clearing it first.
+
+        Useful to reduce a copy via init_mappings_using_automorphisms without mutating the original (e.g. to keep the full, unreduced spaces available for image_by/transport).
+        """
+        result = WalshZeroesSpaces()
+        (<WalshZeroesSpaces>result).cpp_wzs = make_unique[cpp_WalshZeroesSpaces](dereference(self.cpp_wzs))
+        dereference((<WalshZeroesSpaces>result).cpp_wzs).mappings.clear()
+        result.mappings = []
+        return result
+
+
     def image_by(self, L):
         Lm = get_F2AffineMap(L)
         result = WalshZeroesSpaces()
@@ -60,19 +72,30 @@ cdef class WalshZeroesSpaces:
             L = F2AffineMap()
             L.set_inner_map(m)
             self.mappings.append(L)
-        
-    
-    # def init_mappings_using_automorphisms(
-    #         self,
-    #         std_vector[F2AffineMap] automorphisms
-    # ):
-    #     std_vector(
-    #     self.cpp_wzs[0].init_mappings()
-    #     for m in self.cpp_wzs[0].mappings:
-    #         L = F2AffineMap()
-    #         (<F2AffineMap>L).cpp_blm[0] = m
-    #         self.mappings.append(L)
-        
+
+
+    def init_mappings_using_automorphisms(self, automorphisms):
+        """Reduces this WalshZeroesSpaces to one basis per automorphism orbit.
+
+        Args:
+            automorphisms: a list of F2AffineMap expected to contain all the graph automorphisms of the function this WalshZeroesSpaces was built from.
+
+        After this call, `.get_bases()`/`.get_mappings()` return one representative
+        per orbit under the action `V -> V.image_by(A)` for `A` in `automorphisms`.
+        """
+        cdef std_vector[cpp_F2AffineMap] cpp_automorphisms
+        for elt in automorphisms:
+            if not isinstance(elt, F2AffineMap):
+                raise TypeError(f"automorphisms must be a list of F2AffineMap, got {type(elt)} instead")
+            cpp_automorphisms.push_back(dereference((<F2AffineMap>elt).cpp_map))
+        dereference(self.cpp_wzs).init_mappings(cpp_automorphisms)
+        self.mappings = []
+        for m in dereference(self.cpp_wzs).mappings:
+            L = F2AffineMap()
+            L.set_inner_map(m)
+            self.mappings.append(L)
+
+
 
     def get_mappings(self):
         if len(self.mappings) == 0:
@@ -367,6 +390,20 @@ def ccz_equivalences(sbox1, sbox2, single_non_trivial_answer=False, n_threads=MA
     )
 
 def ea_mapping_from_vq(s1, s2, n_threads=MAX_N_THREADS, mode="standard"):
+    """Returns an EA mapping between s1 and s2 via the Walsh-zero-space orbit method.
+
+    Args:
+        s1, s2: S-boxable APN functions CCZ-equivalent to a quadratic.
+        n_threads: number of threads.
+        mode: "standard" — iterate full Aut(q_f);
+              "product"  — exploit the G1⋊G2 semidirect product structure;
+              "test"     — direct C++ translation of the Python reference in
+                           ccz/equivalence_from_vq.py (applies map_q^{-T} twice
+                           to the full WalshZeroesSpaces, iterates via L^{T,-1}).
+
+    Returns:
+        A list containing one EA mapping if s1 and s2 are EA-equivalent, else [].
+    """
     sb1 = get_sbox(s1)
     sb2 = get_sbox(s2)
     mappings = cpp_ea_mapping_from_vq(
@@ -385,6 +422,10 @@ def ea_mapping_from_vq(s1, s2, n_threads=MAX_N_THREADS, mode="standard"):
 
 
 def are_ea_equivalent_from_vq(s1, s2, n_threads=MAX_N_THREADS, mode="standard"):
+    """Returns True iff s1 and s2 are EA-equivalent (via Walsh-zero-space orbit check).
+
+    Accepts the same `mode` values as `ea_mapping_from_vq`.
+    """
     return len(ea_mapping_from_vq(s1, s2, n_threads, mode)) > 0
 
 # !SUBSECTION! Boolean tests
